@@ -3,6 +3,7 @@
 <section>
     <h1>서울시 기온 예측</h1>
     <h2>예측 결과</h2>
+    <a href="{{ url_for('export_predictions', date=start_date) }}" class="download-link">예측 결과 다운로드</a>
     <a href="{{ url_for('index') }}">다시 예측하기</a>
     <div class="chart-container">
         <canvas id="temperatureChart"></canvas>

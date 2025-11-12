@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file, abort
 from sklearn.linear_model import LinearRegression
 import pandas as pd
 import json
+from io import BytesIO
+from io import BytesIO
 
 app = Flask(__name__)
 
@@ -41,7 +43,6 @@ def predict():
                 'temperature': float(prediction_value[0]),
             }
         )
-
     # Chart.js 데이터셋 구성
     datasets = [
         {
@@ -102,7 +103,52 @@ def predict():
 
     # Chart.js에서 바로 사용할 수 있도록 JSON으로 반환
     data = json.dumps(chart_payload, ensure_ascii=False)
-    return render_template('result.html', data=data)
+    start_date_str = start_date.strftime('%Y-%m-%d')
+    return render_template('result.html', data=data, start_date=start_date_str)
+
+
+@app.route('/export')
+def export_predictions():
+    date_str = request.args.get('date')
+    if not date_str:
+        abort(400, description='date 파라미터가 필요합니다.')
+
+    try:
+        start_date = pd.to_datetime(date_str)
+    except (ValueError, TypeError):
+        abort(400, description='잘못된 날짜 형식입니다.')
+
+    records = []
+    for offset in range(7):
+        target_date = start_date + pd.Timedelta(days=offset)
+        prediction_value = model.predict([[target_date.toordinal()]])
+        records.append(
+            {
+                '날짜': target_date.strftime('%Y-%m-%d'),
+                '예상온도': float(prediction_value[0]),
+            }
+        )
+
+    if not records:
+        abort(404, description='내보낼 예측 데이터가 없습니다.')
+
+    df_export = pd.DataFrame(records)
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df_export.to_excel(writer, index=False)
+    output.seek(0)
+
+    filename = f"temperature_forecast_{start_date.strftime('%Y%m%d')}.xlsx"
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+
+@app.route('/export', methods=['POST'])
+def export():
+    buffer = BytesIO()
 
 if __name__ == '__main__':
     app.run(debug=True)
