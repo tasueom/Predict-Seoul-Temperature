@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block content %}
+<section>
+    <h1>서울시 기온 예측</h1>
+    <h2>예측 결과</h2>
+    <a href="{{ url_for('index') }}">다시 예측하기</a>
+    <div class="chart-container">
+        <canvas id="temperatureChart"></canvas>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="chart_data" type="application/json">{{ data | safe }}</script>
+<script>
+    const rawDataElement = document.getElementById('chart_data');
+    const predictions = JSON.parse(rawDataElement.textContent);
+    const ctx = document.getElementById('temperatureChart').getContext('2d');
+
+    const labels = predictions.map(item => item.date);
+    const temperatures = predictions.map(item => item.temperature);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '예측 평균 기온 (℃)',
+                data: temperatures,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: '날짜'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: '평균 기온 (℃)'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
