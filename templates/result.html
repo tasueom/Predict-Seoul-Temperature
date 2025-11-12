@@ -14,24 +14,17 @@
 <script id="chart_data" type="application/json">{{ data | safe }}</script>
 <script>
     const rawDataElement = document.getElementById('chart_data');
-    const predictions = JSON.parse(rawDataElement.textContent);
+    const chartData = JSON.parse(rawDataElement.textContent);
     const ctx = document.getElementById('temperatureChart').getContext('2d');
 
-    const labels = predictions.map(item => item.date);
-    const temperatures = predictions.map(item => item.temperature);
+    const labels = chartData.labels || [];
+    const datasets = chartData.datasets || [];
 
     new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                label: '예측 평균 기온 (℃)',
-                data: temperatures,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                tension: 0.2,
-                fill: true
-            }]
+            datasets: datasets
         },
         options: {
             responsive: true,
