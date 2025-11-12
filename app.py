@@ -62,7 +62,7 @@ def predict():
         ('rgba(255, 159, 64, 1)', 'rgba(255, 159, 64, 0.2)'),
     ]
 
-    unique_years = sorted(df['일시'].dt.year.unique())
+    unique_years = sorted(df['일시'].dt.year.unique(), reverse=True)
     color_index = 0
     for year in unique_years:
         actuals = []
