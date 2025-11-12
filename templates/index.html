@@ -25,15 +25,14 @@
         var formattedDate = yyyy + '-' + mm + '-' + dd;
         var dateInput = document.querySelector('input[name="date"]');
         if (dateInput) {
-            // 오늘 날짜를 기본값으로 설정
-            dateInput.value = formattedDate;
-            // min을 오늘 날짜의 다음날로 설정
+            // 내일 날짜를 기본값으로 설정
             var tomorrow = new Date(today);
             tomorrow.setDate(today.getDate() + 1);
             var nextYyyy = tomorrow.getFullYear();
             var nextMm = String(tomorrow.getMonth() + 1).padStart(2, '0');
             var nextDd = String(tomorrow.getDate()).padStart(2, '0');
             var minDate = nextYyyy + '-' + nextMm + '-' + nextDd;
+            dateInput.value = minDate;
             dateInput.min = minDate;
         }
     });
