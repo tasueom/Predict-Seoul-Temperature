@@ -2,10 +2,12 @@ from flask import Flask, render_template, request, send_file, abort
 from sklearn.linear_model import LinearRegression
 import pandas as pd
 import json
-from io import BytesIO
+import os
 from io import BytesIO
 
 app = Flask(__name__)
+EXPORT_DIR = os.path.join(app.root_path, 'exports')
+os.makedirs(EXPORT_DIR, exist_ok=True)
 
 model = LinearRegression()
 # 다년간의 기온 데이터 로드
@@ -132,15 +134,15 @@ def export_predictions():
     if not records:
         abort(404, description='내보낼 예측 데이터가 없습니다.')
 
-    df_export = pd.DataFrame(records)
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df_export.to_excel(writer, index=False)
-    output.seek(0)
-
     filename = f"temperature_forecast_{start_date.strftime('%Y%m%d')}.xlsx"
+    file_path = os.path.join(EXPORT_DIR, filename)
+
+    df_export = pd.DataFrame(records)
+    with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+        df_export.to_excel(writer, index=False)
+
     return send_file(
-        output,
+        file_path,
         as_attachment=True,
         download_name=filename,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
